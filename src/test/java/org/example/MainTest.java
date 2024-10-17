@@ -1,10 +1,19 @@
 package org.example;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
+
+
+    @AfterAll
+    static void tearDownAfterClass(){
+        System.out.println("@AfterAll tearDownAfterClass");
+    }
 
     @Test
     void add() {
@@ -32,6 +41,14 @@ class MainTest {
         Main m3=new Main();
         int expected =33;
         int actual = m3.add(3,6);
+    }
+    @BeforeAll
+    static void setUpBeforeClass()throws Exception{
+    System.out.println("@BeforeAll  setUpBeforeClass");
+    }
+    @AfterEach
+    void tearDown(){
+    System.out.println("@AfterEach tearDown");
     }
 
 
