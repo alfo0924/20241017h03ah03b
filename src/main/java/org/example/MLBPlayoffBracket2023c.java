@@ -20,7 +20,7 @@ public class MLBPlayoffBracket2023c {
             br.readLine(); // 跳過標題行
             while ((line = br.readLine()) != null) {
                 String[] data = line.split(",");
-                teamNames.put(data[0], data[1]);
+                teamNames.put(data[0], data[-1]);
             }
         }
         return teamNames;
