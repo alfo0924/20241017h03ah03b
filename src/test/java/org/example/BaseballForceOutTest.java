@@ -15,66 +15,66 @@ public class BaseballForceOutTest {
     @Test
     public void testEmptyBases() {
         try {
-            // 測試案例1: 正確的空壘表示方式
+            // 測試案例1: 標準空壘符號
             List<String> result1 = BaseballForceOut.getForceOutBases("x");
-            assertEquals(Arrays.asList("1B"), result1);  // 空壘時只有一壘可以封殺
+            assertEquals(Arrays.asList("1B"), result1);  // 正確：空壘時只能封殺一壘
 
-            // 測試案例2: 使用大寫X表示空壘
+            // 測試案例2: 大寫空壘符號
             List<String> result2 = BaseballForceOut.getForceOutBases("X");
-            assertEquals(Arrays.asList("1B"), result2);  // 大寫X也應該被視為空壘
+            assertEquals(Arrays.asList("1B"), result2);  // 正確：大寫也視為空壘
 
-            // 測試案例3: 使用空壘符號加空格
+            // 測試案例3: 含空格的空壘符號
             List<String> result3 = BaseballForceOut.getForceOutBases(" x ");
-            assertEquals(Arrays.asList("1B"), result3);  // 含空格的輸入應該被正確處理
+            assertEquals(Arrays.asList("1B"), result3);  // 正確：空格不影響結果
 
-            // 測試案例4: 使用空壘符號加逗號
+            // 測試案例4: 含逗號的空壘符號
             List<String> result4 = BaseballForceOut.getForceOutBases("x,");
-            assertEquals(Arrays.asList("1B"), result4);  // 多餘的逗號應該被正確處理
+            assertEquals(Arrays.asList("1B"), result4);  // 正確：逗號不影響結果
 
-            // 測試案例5: 使用多個空壘符號
+            // 測試案例5: 重複的空壘符號
             List<String> result5 = BaseballForceOut.getForceOutBases("x, x");
-            assertEquals(Arrays.asList("1B"), result5);  // 多個空壘符號應該只返回一壘
+            assertEquals(Arrays.asList("1B"), result5);  // 正確：重複符號視為空壘
 
-            // 測試案例6: 使用空字串
+            // 測試案例6: 空字串
             List<String> result6 = BaseballForceOut.getForceOutBases("");
-            assertEquals(Arrays.asList("1B"), result6);  // 空字串應該視為空壘
+            assertEquals(Arrays.asList("1B"), result6);  // 正確：空字串視為空壘
 
-            // 測試案例7: 使用null值
+            // 測試案例7: null值
             assertThrows(NullPointerException.class, () -> {
                 BaseballForceOut.getForceOutBases(null);
-            });
+            });  // 正確：null應該拋出異常
 
-            // 測試案例8: 使用無效的壘包符號
+            // 測試案例8: 數字符號
             List<String> result8 = BaseballForceOut.getForceOutBases("0");
-            assertEquals(Arrays.asList("1B"), result8);  // 無效符號應該視為空壘
+            assertEquals(Arrays.asList("1B"), result8);  // 正確：無效符號視為空壘
 
-            // 測試案例9: 使用特殊字元
+            // 測試案例9: 特殊字元
             List<String> result9 = BaseballForceOut.getForceOutBases("@#$");
-            assertEquals(Arrays.asList("1B"), result9);  // 特殊字元應該視為空壘
+            assertEquals(Arrays.asList("1B"), result9);  // 正確：特殊字元視為空壘
 
-            // 測試案例10: 使用空格字串
+            // 測試案例10: 單一空格
             List<String> result10 = BaseballForceOut.getForceOutBases(" ");
-            assertEquals(Arrays.asList("1B"), result10);  // 純空格應該視為空壘
+            assertEquals(Arrays.asList("1B"), result10);  // 正確：空格視為空壘
 
-            // 測試案例11: 使用多個空格
+            // 測試案例11: 多個空格
             List<String> result11 = BaseballForceOut.getForceOutBases("   ");
-            assertEquals(Arrays.asList("1B"), result11);  // 多個空格應該視為空壘
+            assertEquals(Arrays.asList("1B"), result11);  // 正確：多個空格視為空壘
 
-            // 測試案例12: 使用換行符
+            // 測試案例12: 換行符
             List<String> result12 = BaseballForceOut.getForceOutBases("\n");
-            assertEquals(Arrays.asList("1B"), result12);  // 換行符應該視為空壘
+            assertEquals(Arrays.asList("1B"), result12);  // 正確：換行符視為空壘
 
-            // 測試案例13: 使用tab符號
+            // 測試案例13: Tab字元
             List<String> result13 = BaseballForceOut.getForceOutBases("\t");
-            assertEquals(Arrays.asList("1B"), result13);  // tab符號應該視為空壘
+            assertEquals(Arrays.asList("1B"), result13);  // 正確：Tab視為空壘
 
             // 測試案例14: 混合空白字元
             List<String> result14 = BaseballForceOut.getForceOutBases(" \t\n ");
-            assertEquals(Arrays.asList("1B"), result14);  // 混合空白字元應該視為空壘
+            assertEquals(Arrays.asList("1B"), result14);  // 正確：混合空白字元視為空壘
 
-            // 測試案例15: 使用不同分隔符號
+            // 測試案例15: 分號分隔
             List<String> result15 = BaseballForceOut.getForceOutBases("x; x");
-            assertEquals(Arrays.asList("1B"), result15);  // 使用分號分隔應該視為空壘
+            assertEquals(Arrays.asList("1B"), result15);  // 正確：錯誤格式視為空壘
 
         } catch (Exception e) {
             fail("測試過程中發生未預期的異常: " + e.getMessage());
@@ -231,6 +231,36 @@ public class BaseballForceOutTest {
             List<String> result10 = BaseballForceOut.getForceOutBases("3B");
             List<String> expected = Arrays.asList("1B");
             assertEquals(expected, result10);  // 正確：完整比對結果
+
+        } catch (Exception e) {
+            fail("測試過程中發生未預期的異常: " + e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void testNullInput() {
+        try {
+            // 測試案例1: 測試字串 "null"
+            List<String> result1 = BaseballForceOut.getForceOutBases("null");
+            assertEquals(Arrays.asList("1B"), result1);  // 正確：視為空壘
+
+            // 測試案例2: 測試真正的 null 值
+            assertThrows(NullPointerException.class, () -> {
+                BaseballForceOut.getForceOutBases(null);
+            });  // 正確：應該拋出 NullPointerException
+
+            // 測試案例3: 測試 null 字串
+            List<String> result3 = BaseballForceOut.getForceOutBases("NULL");
+            assertEquals(Arrays.asList("1B"), result3);  // 正確：視為空壘
+
+            // 測試案例4: 測試小寫 null
+            List<String> result4 = BaseballForceOut.getForceOutBases("null");
+            assertEquals(Arrays.asList("1B"), result4);  // 正確：視為空壘
+
+            // 測試案例5: 測試帶空格的 null
+            List<String> result5 = BaseballForceOut.getForceOutBases(" null ");
+            assertEquals(Arrays.asList("1B"), result5);  // 正確：視為空壘
 
         } catch (Exception e) {
             fail("測試過程中發生未預期的異常: " + e.getMessage());
