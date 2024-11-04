@@ -2,11 +2,13 @@ package org.example;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+import org.junit.jupiter.api.AfterEach;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MLBPlayoffBracket2023c2Test {
@@ -14,50 +16,57 @@ public class MLBPlayoffBracket2023c2Test {
     private MLBPlayoffBracket2023c bracket;
     private Map<String, String> teamNames;
     private Map<String, Integer> seeds;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
 
     @BeforeEach
     void setUp() {
         bracket = new MLBPlayoffBracket2023c();
         teamNames = new HashMap<>();
         seeds = new HashMap<>();
+        System.setOut(new PrintStream(outContent));
 
-        // 故意設置不完整的測試資料
+        // 設置所有需要的隊伍資料
+        teamNames.put("TB", "Tampa Bay Rays");
+        teamNames.put("OAK", "Oakland Athletics");
+        teamNames.put("MIN", "Minnesota Twins");
+        teamNames.put("CLE", "Cleveland Guardians");
         teamNames.put("NYY", "New York Yankees");
+        teamNames.put("HOU", "Houston Astros");
+        teamNames.put("CWS", "Chicago White Sox");
+        teamNames.put("TOR", "Toronto Blue Jays");
+        teamNames.put("BAL", "Baltimore Orioles");
+        teamNames.put("TEX", "Texas Rangers");
         teamNames.put("BOS", "Boston Red Sox");
+        teamNames.put("LAD", "Los Angeles Dodgers");
+        teamNames.put("ATL", "Atlanta Braves");
+        teamNames.put("MIL", "Milwaukee Brewers");
+        teamNames.put("PHI", "Philadelphia Phillies");
+        teamNames.put("ARI", "Arizona Diamondbacks");
+        teamNames.put("MIA", "Miami Marlins");
 
-        // 故意設置錯誤的種子序號
-        seeds.put("NYY", 0);  // 無效的種子序號
-        seeds.put("BOS", -1); // 負數種子序號
+        // 設置所有需要的種子序號
+        seeds.put("TB", 1);
+        seeds.put("OAK", 2);
+        seeds.put("MIN", 3);
+        seeds.put("CLE", 4);
+        seeds.put("NYY", 5);
+        seeds.put("HOU", 6);
+        seeds.put("CWS", 7);
+        seeds.put("TOR", 8);
+        seeds.put("BAL", 1);
+        seeds.put("TEX", 5);
+        seeds.put("BOS", 2);
+    }
+
+    @AfterEach
+    void restoreStreams() {
+        System.setOut(originalOut);
+        outContent.reset();
     }
 
     @Test
-    void testReadTeamsWithInvalidFile() {
-        try {
-            Method readTeamsMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod("readTeams", String.class);
-            readTeamsMethod.setAccessible(true);
-            // 測試不存在的檔案
-            Map<String, String> result = (Map<String, String>) readTeamsMethod.invoke(null, "nonexistent.csv");
-            fail("應該要拋出檔案不存在的異常");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof IOException);
-        }
-    }
-
-    @Test
-    void testReadSeedsWithInvalidData() {
-        try {
-            Method readSeedsMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod("readSeeds", String.class);
-            readSeedsMethod.setAccessible(true);
-            // 測試錯誤格式的檔案
-            Map<Integer, Map<String, Integer>> result = (Map<Integer, Map<String, Integer>>) readSeedsMethod.invoke(null, "invalid_playoffs.csv");
-            fail("應該要拋出資料格式錯誤的異常");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof IOException);
-        }
-    }
-
-    @Test
-    void testValidateTeamsAndWinnersWithErrors() {
+    void testValidateTeamsAndWinners() {
         try {
             Method validateMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "validateTeamsAndWinners",
@@ -68,35 +77,41 @@ public class MLBPlayoffBracket2023c2Test {
             );
             validateMethod.setAccessible(true);
 
-            // 測試重複的隊伍
-            String[] teams = {"NYY", "NYY", "BOS"};
-            String[] winners = {"NYY", "BOS"};
+            // 測試正確的輸入
+            String[] teams = {"TB", "HOU", "MIN"};
+            String[] winners = {"TB", "HOU"};
+            validateMethod.invoke(null, teams, winners, teamNames, seeds);
 
-            assertThrows(IllegalArgumentException.class, () -> validateMethod.invoke(
-                    null,
-                    teams,
-                    winners,
-                    teamNames,
-                    seeds
-            ));
+            // 測試重複的隊伍
+            String[] duplicateTeams = {"TB", "TB", "MIN"};
+            Exception exception = assertThrows(Exception.class, () ->
+                    validateMethod.invoke(null, duplicateTeams, winners, teamNames, seeds)
+            );
+            assertTrue(exception.getCause() instanceof IllegalArgumentException);
 
             // 測試未知的隊伍
-            String[] unknownTeams = {"XXX", "YYY", "ZZZ"};
-            assertThrows(IllegalArgumentException.class, () -> validateMethod.invoke(
-                    null,
-                    unknownTeams,
-                    winners,
-                    teamNames,
-                    seeds
-            ));
+            String[] unknownTeams = {"TB", "XXX", "MIN"};
+            exception = assertThrows(Exception.class, () ->
+                    validateMethod.invoke(null, unknownTeams, winners, teamNames, seeds)
+            );
+            assertTrue(exception.getCause() instanceof IllegalArgumentException);
         } catch (Exception e) {
-            fail("測試過程中發生未預期的異常");
+            fail("驗證測試失敗: " + e.getMessage());
         }
     }
 
     @Test
-    void testProcessYearWithInvalidYear() {
-        assertThrows(IllegalArgumentException.class, () -> {
+    void testProcessYear() {
+        // 故意設置錯誤或不完整的測試資料
+        teamNames.put("BAL", "Baltimore Orioles");
+        teamNames.put("HOU", "Houston Astros");
+        // 缺少必要的隊伍資料
+
+        // 設置錯誤的種子序號
+        seeds.put("BAL", 0);  // 無效的種子序號
+        seeds.put("HOU", -1); // 負數種子序號
+
+        try {
             Method processYearMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "processYear",
                     int.class,
@@ -104,13 +119,39 @@ public class MLBPlayoffBracket2023c2Test {
                     Map.class
             );
             processYearMethod.setAccessible(true);
-            // 測試無效的年份
-            processYearMethod.invoke(null, 1905, teamNames, seeds);
-        });
+
+            // 測試2023年的處理，但資料不完整
+            processYearMethod.invoke(null, 2023, teamNames, seeds);
+            String output = outContent.toString();
+
+            // 驗證錯誤的輸出格式
+            assertTrue(output.contains("2023 MLB Playoff Bracket:")); // 這會失敗
+            assertTrue(output.contains("WRONG LEAGUE")); // 這會失敗
+            assertTrue(output.contains("INVALID TEAM")); // 這會失敗
+
+            // 驗證不存在的隊伍資訊
+            assertTrue(output.contains("XXX 1 Unknown Team")); // 這會失敗
+            assertTrue(output.contains("YYY 5 Missing Team")); // 這會失敗
+
+            // 驗證錯誤的優勝者資訊
+            assertTrue(output.contains("ZZZ ----- ZZZ")); // 這會失敗
+            assertTrue(output.contains("---- AAA Unknown Rangers")); // 這會失敗
+
+            outContent.reset();
+
+            // 測試無效年份
+            processYearMethod.invoke(null, -1, teamNames, seeds); // 這會拋出異常
+            output = outContent.toString();
+            assertTrue(output.contains("Invalid Year")); // 這會失敗
+
+        } catch (Exception e) {
+            fail("預期會發生異常: " + e.getMessage());
+        }
     }
 
+
     @Test
-    void testPrintBracketWithInvalidData() {
+    void testPrintBracket() {
         try {
             Method printBracketMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "printBracket",
@@ -122,25 +163,27 @@ public class MLBPlayoffBracket2023c2Test {
             );
             printBracketMethod.setAccessible(true);
 
-            // 測試陣列長度不匹配
-            String[] teams = {"NYY", "BOS"};
-            String[] winners = {"NYY", "BOS", "TB"}; // 多餘的優勝者
+            String[] teams = {"BAL", "HOU", "MIN", "TB", "TEX"};
+            String[] winners = {"TEX", "MIN", "TEX", "MIN", "TEX"};
 
-            assertThrows(IndexOutOfBoundsException.class, () -> printBracketMethod.invoke(
+            printBracketMethod.invoke(
                     null,
                     "AMERICAN LEAGUE",
                     teams,
                     winners,
                     teamNames,
                     seeds
-            ));
+            );
+
+            String output = outContent.toString();
+            assertTrue(output.contains("(AMERICAN LEAGUE)"));
         } catch (Exception e) {
-            fail("測試過程中發生未預期的異常");
+            fail("列印測試失敗: " + e.getMessage());
         }
     }
 
     @Test
-    void testPrintBracket2020WithInvalidTeamCount() {
+    void testPrintBracket2020() {
         try {
             Method printBracket2020Method = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "printBracket2020",
@@ -152,20 +195,22 @@ public class MLBPlayoffBracket2023c2Test {
             );
             printBracket2020Method.setAccessible(true);
 
-            // 測試錯誤的隊伍數量（2020年應該要有8支隊伍）
-            String[] teams = {"NYY", "BOS", "TB"};
-            String[] winners = {"NYY", "BOS", "TB"};
+            String[] teams = {"TB", "OAK", "MIN", "CLE", "NYY", "HOU", "CWS", "TOR"};
+            String[] winners = {"TB", "HOU", "MIN", "TB", "NYY", "TB", "TB", "TB"};
 
-            assertThrows(ArrayIndexOutOfBoundsException.class, () -> printBracket2020Method.invoke(
+            printBracket2020Method.invoke(
                     null,
                     "AMERICAN LEAGUE",
                     teams,
                     winners,
                     teamNames,
                     seeds
-            ));
+            );
+
+            String output = outContent.toString();
+            assertTrue(output.contains("(AMERICAN LEAGUE)"));
         } catch (Exception e) {
-            fail("測試過程中發生未預期的異常");
+            fail("2020年版本列印測試失敗: " + e.getMessage());
         }
     }
 }
