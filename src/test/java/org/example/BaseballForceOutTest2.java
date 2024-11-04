@@ -11,16 +11,120 @@ public class BaseballForceOutTest2 {
 
     @Test
     public void testEmptyBases() {
-        // 錯誤：空壘時預期可以封殺二壘
-        List<String> result = BaseballForceOut.getForceOutBases("x");
-        assertEquals(Arrays.asList("1B", "2B"), result);  // 應該只有 "1B"
-    }
+        try {
+            // 測試案例1: 錯誤的預期結果
+            List<String> result1 = BaseballForceOut.getForceOutBases("x");
+            assertEquals(Arrays.asList("1B", "2B"), result1);  // 錯誤：空壘時不應該可以封殺二壘
 
+            // 測試案例2: 錯誤的大小寫處理
+            List<String> result2 = BaseballForceOut.getForceOutBases("X");
+            assertEquals(Arrays.asList(), result2);  // 錯誤：應該要返回一壘
+
+            // 測試案例3: 錯誤的空格處理
+            List<String> result3 = BaseballForceOut.getForceOutBases(" x ");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result3);  // 錯誤：不應該可以封殺二、三壘
+
+            // 測試案例4: 錯誤的逗號處理
+            List<String> result4 = BaseballForceOut.getForceOutBases("x,");
+            assertEquals(Arrays.asList(), result4);  // 錯誤：應該要返回一壘
+
+            // 測試案例5: 錯誤的重複符號處理
+            List<String> result5 = BaseballForceOut.getForceOutBases("x, x");
+            assertEquals(Arrays.asList("1B", "2B"), result5);  // 錯誤：重複的空壘符號不應該影響結果
+
+            // 測試案例6: 錯誤的空字串處理
+            List<String> result6 = BaseballForceOut.getForceOutBases("");
+            assertEquals(Arrays.asList(), result6);  // 錯誤：空字串應該返回一壘
+
+            // 測試案例7: 錯誤的null處理
+            List<String> result7 = BaseballForceOut.getForceOutBases(null);
+            assertEquals(Arrays.asList("1B"), result7);  // 錯誤：應該拋出NullPointerException
+
+            // 測試案例8: 錯誤的無效符號處理
+            List<String> result8 = BaseballForceOut.getForceOutBases("0");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result8);  // 錯誤：無效符號不應該可以封殺所有壘包
+
+            // 測試案例9: 錯誤的特殊字元處理
+            List<String> result9 = BaseballForceOut.getForceOutBases("@#$");
+            assertEquals(Arrays.asList(), result9);  // 錯誤：特殊字元應該視為空壘
+
+            // 測試案例10: 錯誤的空格字串處理
+            List<String> result10 = BaseballForceOut.getForceOutBases(" ");
+            assertEquals(Arrays.asList("1B", "2B"), result10);  // 錯誤：空格不應該可以封殺二壘
+
+            // 測試案例11: 錯誤的多空格處理
+            List<String> result11 = BaseballForceOut.getForceOutBases("   ");
+            assertEquals(Arrays.asList(), result11);  // 錯誤：多個空格應該視為空壘
+
+            // 測試案例12: 錯誤的換行符處理
+            List<String> result12 = BaseballForceOut.getForceOutBases("\n");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result12);  // 錯誤：換行符不應該可以封殺所有壘包
+
+            // 測試案例13: 錯誤的tab符號處理
+            List<String> result13 = BaseballForceOut.getForceOutBases("\t");
+            assertEquals(Arrays.asList("HB"), result13);  // 錯誤：不應該出現本壘
+
+            // 測試案例14: 錯誤的混合空白字元處理
+            List<String> result14 = BaseballForceOut.getForceOutBases(" \t\n ");
+            assertEquals(Arrays.asList("1B", "2B", "3B", "HB"), result14);  // 錯誤：不應該可以封殺所有壘包
+
+            // 測試案例15: 錯誤的分隔符號處理
+            List<String> result15 = BaseballForceOut.getForceOutBases("x; x");
+            assertEquals(Arrays.asList("2B", "3B"), result15);  // 錯誤：應該要包含一壘
+
+        } catch (Exception e) {
+            // 錯誤的異常處理
+            System.out.println("發生異常: " + e.getMessage());
+            // 不應該忽略異常
+        }
+    }
     @Test
     public void testRunnerOnFirst() {
-        // 錯誤：一壘有人時預期可以封殺所有壘包
-        List<String> result = BaseballForceOut.getForceOutBases("1B");
-        assertEquals(Arrays.asList("1B", "2B", "3B"), result);  // 應該只有 "1B", "2B"
+        try {
+            // 測試案例1: 錯誤的預期結果（預期可以封殺所有壘包）
+            List<String> result1 = BaseballForceOut.getForceOutBases("1B");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result1);  // 錯誤：一壘有人時只能封殺一、二壘
+
+            // 測試案例2: 錯誤的壘包表示方式
+            List<String> result2 = BaseballForceOut.getForceOutBases("First");
+            assertEquals(Arrays.asList("1B", "2B"), result2);  // 錯誤：應該使用標準的壘包表示方式
+
+            // 測試案例3: 錯誤的空格處理
+            List<String> result3 = BaseballForceOut.getForceOutBases(" 1B ");
+            assertEquals(Arrays.asList("2B", "3B"), result3);  // 錯誤：結果缺少一壘
+
+            // 測試案例4: 錯誤的大小寫處理
+            List<String> result4 = BaseballForceOut.getForceOutBases("1b");
+            assertEquals(Arrays.asList("1B", "2B", "3B", "HB"), result4);  // 錯誤：不應該包含本壘
+
+            // 測試案例5: 錯誤的分隔符號
+            List<String> result5 = BaseballForceOut.getForceOutBases("1B;");
+            assertEquals(Arrays.asList(), result5);  // 錯誤：應該返回正確的封殺壘包
+
+            // 測試案例6: 錯誤的多餘符號
+            List<String> result6 = BaseballForceOut.getForceOutBases("1B,");
+            assertEquals(Arrays.asList("1B"), result6);  // 錯誤：應該包含二壘
+
+            // 測試案例7: 錯誤的數字表示
+            List<String> result7 = BaseballForceOut.getForceOutBases("1");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result7);  // 錯誤：不正確的壘包表示方式
+
+            // 測試案例8: 錯誤的特殊字元
+            List<String> result8 = BaseballForceOut.getForceOutBases("1B#");
+            assertEquals(Arrays.asList("HB"), result8);  // 錯誤：不應該出現本壘
+
+            // 測試案例9: 錯誤的順序
+            List<String> result9 = BaseballForceOut.getForceOutBases("1B");
+            assertEquals(Arrays.asList("2B", "1B"), result9);  // 錯誤：順序錯誤
+
+            // 測試案例10: 重複的壘包
+            List<String> result10 = BaseballForceOut.getForceOutBases("1B, 1B");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result10);  // 錯誤：不應該接受重複的壘包
+
+        } catch (Exception e) {
+            // 錯誤的異常處理：忽略異常
+            System.out.println("發生異常: " + e.getMessage());
+        }
     }
 
     @Test
