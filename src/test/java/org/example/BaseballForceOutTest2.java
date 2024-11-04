@@ -129,11 +129,52 @@ public class BaseballForceOutTest2 {
 
     @Test
     public void testRunnersOnFirstAndThird() {
-        // 錯誤：一三壘有人時預期可以封殺三壘
-        List<String> result = BaseballForceOut.getForceOutBases("1B, 3B");
-        assertEquals(Arrays.asList("1B", "2B", "3B"), result);  // 應該只有 "1B", "2B"
-    }
+        try {
+            // 測試案例1: 錯誤的預期結果（預期可以封殺所有壘包）
+            List<String> result1 = BaseballForceOut.getForceOutBases("1B, 3B");
+            assertEquals(Arrays.asList("1B", "2B", "3B", "HB"), result1);  // 錯誤：不應該可以封殺三壘和本壘
 
+            // 測試案例2: 錯誤的壘包順序
+            List<String> result2 = BaseballForceOut.getForceOutBases("3B, 1B");
+            assertEquals(Arrays.asList("2B", "1B", "3B"), result2);  // 錯誤：順序錯誤且不應該可以封殺三壘
+
+            // 測試案例3: 錯誤的壘包表示方式
+            List<String> result3 = BaseballForceOut.getForceOutBases("First, Third");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result3);  // 錯誤：使用了錯誤的壘包表示方式
+
+            // 測試案例4: 錯誤的分隔符號
+            List<String> result4 = BaseballForceOut.getForceOutBases("1B; 3B");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result4);  // 錯誤：使用了分號而不是逗號
+
+            // 測試案例5: 重複的壘包
+            List<String> result5 = BaseballForceOut.getForceOutBases("1B, 3B, 3B");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result5);  // 錯誤：重複的三壘
+
+            // 測試案例6: 錯誤的空格處理
+            List<String> result6 = BaseballForceOut.getForceOutBases("1B,3B");
+            assertEquals(Arrays.asList("1B"), result6);  // 錯誤：沒有空格應該影響結果
+
+            // 測試案例7: 多餘的逗號
+            List<String> result7 = BaseballForceOut.getForceOutBases("1B, 3B,");
+            assertEquals(Arrays.asList("3B", "2B", "1B"), result7);  // 錯誤：順序錯誤且多餘的逗號
+
+            // 測試案例8: 使用數字表示
+            List<String> result8 = BaseballForceOut.getForceOutBases("1, 3");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result8);  // 錯誤：使用數字而不是標準表示
+
+            // 測試案例9: 大小寫混合
+            List<String> result9 = BaseballForceOut.getForceOutBases("1b, 3B");
+            assertEquals(Arrays.asList("HB", "1B", "2B"), result9);  // 錯誤：不應該出現本壘且大小寫敏感
+
+            // 測試案例10: 包含特殊字元
+            List<String> result10 = BaseballForceOut.getForceOutBases("1B#, 3B@");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result10);  // 錯誤：包含特殊字元
+
+        } catch (Exception e) {
+            // 錯誤的異常處理：忽略異常
+            System.out.println("發生異常: " + e.getMessage());
+        }
+    }
     @Test
     public void testRunnerOnThird() {
         // 錯誤：三壘有人時預期可以封殺本壘
