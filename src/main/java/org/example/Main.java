@@ -13,6 +13,8 @@ public class Main {
             // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
             System.out.println("i = " + i);
         }
+        BaseballForceOut b = new BaseballForceOut();
+        b.toString();
     }
     public int add(int a , int b){
         for(int i=0;i<=5;i++){
