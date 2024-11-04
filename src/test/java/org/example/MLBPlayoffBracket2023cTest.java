@@ -207,10 +207,26 @@ public class MLBPlayoffBracket2023cTest {
         }
     }
 
-
     @Test
     void testPrintBracket() {
         try {
+            // 設置2023年美國聯盟的測試資料
+            teamNames.clear();
+            teamNames.put("BAL", "Baltimore Orioles");
+            teamNames.put("HOU", "Houston Astros");
+            teamNames.put("MIN", "Minnesota Twins");
+            teamNames.put("TB", "Tampa Bay Rays");
+            teamNames.put("TEX", "Texas Rangers");
+            teamNames.put("TOR", "Toronto Blue Jays");
+
+            seeds.clear();
+            seeds.put("BAL", 1);
+            seeds.put("HOU", 2);
+            seeds.put("MIN", 3);
+            seeds.put("TB", 4);
+            seeds.put("TEX", 5);
+            seeds.put("TOR", 6);
+
             Method printBracketMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "printBracket",
                     String.class,
@@ -221,7 +237,8 @@ public class MLBPlayoffBracket2023cTest {
             );
             printBracketMethod.setAccessible(true);
 
-            String[] teams = {"BAL", "HOU", "MIN", "TB", "TEX"};
+            // 測試2023年美國聯盟的賽程
+            String[] teams = {"BAL", "HOU", "MIN", "TB", "TEX", "TOR"};
             String[] winners = {"TEX", "MIN", "TEX", "MIN", "TEX"};
 
             printBracketMethod.invoke(
@@ -234,11 +251,42 @@ public class MLBPlayoffBracket2023cTest {
             );
 
             String output = outContent.toString();
+
+            // 驗證基本輸出格式
             assertTrue(output.contains("(AMERICAN LEAGUE)"));
+
+            // 驗證隊伍資訊
+            assertTrue(output.contains("BAL 1 Baltimore Orioles"));
+            assertTrue(output.contains("HOU 2 Houston Astros"));
+            assertTrue(output.contains("MIN 3 Minnesota Twins"));
+            assertTrue(output.contains("TEX 5 Texas Rangers"));
+
+            // 驗證優勝者資訊
+            assertTrue(output.contains("TEX ----- TEX"));
+            assertTrue(output.contains("MIN ----- TEX"));
+
+            outContent.reset();
+
+            // 測試空陣列的處理（邊界情況）
+            String[] emptyTeams = {};
+            String[] emptyWinners = {};
+            printBracketMethod.invoke(
+                    null,
+                    "AMERICAN LEAGUE",
+                    emptyTeams,
+                    emptyWinners,
+                    teamNames,
+                    seeds
+            );
+
+            output = outContent.toString();
+            assertTrue(output.contains("(AMERICAN LEAGUE)"));
+
         } catch (Exception e) {
-            fail("列印測試失敗: " + e.getMessage());
+            fail("測試過程中發生未預期的異常: " + e.getMessage());
         }
     }
+
 
     @Test
     void testPrintBracket2020() {

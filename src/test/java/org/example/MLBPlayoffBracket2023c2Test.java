@@ -187,6 +187,14 @@ public class MLBPlayoffBracket2023c2Test {
     @Test
     void testPrintBracket() {
         try {
+            // 故意設置錯誤的測試資料
+            teamNames.clear();  // 清空原有資料
+            teamNames.put("BAL", "Baltimore Orioles");
+            // 缺少其他隊伍資料
+
+            seeds.clear();  // 清空原有資料
+            seeds.put("BAL", -1);  // 無效的種子序號
+
             Method printBracketMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "printBracket",
                     String.class,
@@ -197,28 +205,105 @@ public class MLBPlayoffBracket2023c2Test {
             );
             printBracketMethod.setAccessible(true);
 
-            String[] teams = {"BAL", "HOU", "MIN", "TB", "TEX"};
-            String[] winners = {"TEX", "MIN", "TEX", "MIN", "TEX"};
+            // 測試案例1: 使用不完整的隊伍陣列
+            String[] invalidTeams = {"BAL", "XXX", "YYY"};
+            String[] invalidWinners = {"BAL", "XXX"};
+            assertThrows(Exception.class, () ->
+                    printBracketMethod.invoke(
+                            null,
+                            "AMERICAN LEAGUE",
+                            invalidTeams,
+                            invalidWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
 
+            // 測試案例2: winners陣列長度不匹配
+            String[] teams = {"BAL", "HOU", "MIN", "TB", "TEX"};
+            String[] shortWinners = {"TEX", "MIN"};  // 長度不足
+            assertThrows(ArrayIndexOutOfBoundsException.class, () ->
+                    printBracketMethod.invoke(
+                            null,
+                            "AMERICAN LEAGUE",
+                            teams,
+                            shortWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例3: 空的聯盟名稱
+            assertThrows(IllegalArgumentException.class, () ->
+                    printBracketMethod.invoke(
+                            null,
+                            "",
+                            teams,
+                            shortWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例4: null參數
+            assertThrows(NullPointerException.class, () ->
+                    printBracketMethod.invoke(
+                            null,
+                            null,
+                            teams,
+                            shortWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例5: 使用不存在於seeds中的隊伍
+            String[] teamsWithoutSeeds = {"BAL", "XXX", "MIN"};
+            String[] winnersForInvalidTeams = {"BAL", "MIN"};
+            assertThrows(NullPointerException.class, () ->
+                    printBracketMethod.invoke(
+                            null,
+                            "AMERICAN LEAGUE",
+                            teamsWithoutSeeds,
+                            winnersForInvalidTeams,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例6: 使用空陣列
+            String[] emptyTeams = {};
+            String[] emptyWinners = {};
             printBracketMethod.invoke(
                     null,
                     "AMERICAN LEAGUE",
-                    teams,
-                    winners,
+                    emptyTeams,
+                    emptyWinners,
                     teamNames,
                     seeds
             );
-
             String output = outContent.toString();
             assertTrue(output.contains("(AMERICAN LEAGUE)"));
+            assertTrue(output.isEmpty());  // 這應該會失敗，因為至少會輸出聯盟名稱
+
         } catch (Exception e) {
-            fail("列印測試失敗: " + e.getMessage());
+            fail("測試過程中發生未預期的異常: " + e.getMessage());
         }
     }
 
     @Test
     void testPrintBracket2020() {
         try {
+            // 故意設置錯誤的測試資料
+            teamNames.clear();  // 清空原有資料
+            teamNames.put("TB", "Tampa Bay Rays");
+            teamNames.put("NYY", "New York Yankees");
+            // 缺少其他必要的隊伍資料
+
+            seeds.clear();  // 清空原有資料
+            seeds.put("TB", -1);  // 無效的種子序號
+            seeds.put("NYY", 0);  // 無效的種子序號
+
             Method printBracket2020Method = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "printBracket2020",
                     String.class,
@@ -229,22 +314,88 @@ public class MLBPlayoffBracket2023c2Test {
             );
             printBracket2020Method.setAccessible(true);
 
-            String[] teams = {"TB", "OAK", "MIN", "CLE", "NYY", "HOU", "CWS", "TOR"};
-            String[] winners = {"TB", "HOU", "MIN", "TB", "NYY", "TB", "TB", "TB"};
+            // 測試案例1: 使用不完整的隊伍陣列（2020年需要8支隊伍）
+            String[] invalidTeams = {"TB", "NYY", "MIN"};  // 隊伍數量不足
+            String[] invalidWinners = {"TB", "NYY"};
+            assertThrows(ArrayIndexOutOfBoundsException.class, () ->
+                    printBracket2020Method.invoke(
+                            null,
+                            "AMERICAN LEAGUE",
+                            invalidTeams,
+                            invalidWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
 
+            // 測試案例2: winners陣列長度不匹配
+            String[] teams = {"TB", "OAK", "MIN", "CLE", "NYY", "HOU", "CWS", "TOR"};
+            String[] shortWinners = {"TB", "NYY", "MIN"};  // winners長度不足
+            assertThrows(ArrayIndexOutOfBoundsException.class, () ->
+                    printBracket2020Method.invoke(
+                            null,
+                            "AMERICAN LEAGUE",
+                            teams,
+                            shortWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例3: 使用未知的隊伍
+            String[] unknownTeams = {"TB", "XXX", "YYY", "ZZZ", "NYY", "AAA", "BBB", "CCC"};
+            String[] unknownWinners = {"TB", "XXX", "YYY", "ZZZ", "NYY", "AAA", "BBB", "CCC"};
+            assertThrows(NullPointerException.class, () ->
+                    printBracket2020Method.invoke(
+                            null,
+                            "AMERICAN LEAGUE",
+                            unknownTeams,
+                            unknownWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例4: 空的聯盟名稱
+            assertThrows(IllegalArgumentException.class, () ->
+                    printBracket2020Method.invoke(
+                            null,
+                            "",
+                            teams,
+                            shortWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例5: 使用null參數
+            assertThrows(NullPointerException.class, () ->
+                    printBracket2020Method.invoke(
+                            null,
+                            null,
+                            teams,
+                            shortWinners,
+                            teamNames,
+                            seeds
+                    )
+            );
+
+            // 測試案例6: 錯誤的優勝者順序
+            String[] invalidWinnerOrder = {"TB", "NYY", "MIN", "CLE", "HOU", "CWS", "TOR", "TB"};
             printBracket2020Method.invoke(
                     null,
                     "AMERICAN LEAGUE",
                     teams,
-                    winners,
+                    invalidWinnerOrder,
                     teamNames,
                     seeds
             );
-
             String output = outContent.toString();
-            assertTrue(output.contains("(AMERICAN LEAGUE)"));
+            assertTrue(output.contains("TB ----- TB")); // 這應該會失敗，因為優勝者順序錯誤
+
         } catch (Exception e) {
-            fail("2020年版本列印測試失敗: " + e.getMessage());
+            fail("測試過程中發生未預期的異常: " + e.getMessage());
         }
     }
+
 }
