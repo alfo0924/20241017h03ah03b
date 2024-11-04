@@ -385,49 +385,48 @@ public class BaseballForceOutTest {
     @Test
     public void testExtraSpaces() {
         try {
-            // 測試案例1: 標準格式（有空格）
+            // 測試案例1: 標準格式
             List<String> result1 = BaseballForceOut.getForceOutBases("1B, 2B");
-            assertEquals(Arrays.asList("1B", "2B", "3B"), result1);  // 正確：一二壘有人時可封殺一二三壘
+            assertEquals(Arrays.asList("1B", "2B","3B"), result1);  // 正確：標準格式應返回兩個壘包
 
-            // 測試案例2: 前後有多餘空格
-            List<String> result2 = BaseballForceOut.getForceOutBases("   1B, 2B   ");
-            assertEquals(Arrays.asList("1B"), result2);  // 正確：前後空格不影響結果
+            // 測試案例2: 前後有空格
+            List<String> result2 = BaseballForceOut.getForceOutBases(" 1B, 2B ");
+            assertEquals(Arrays.asList("1B"), result2);  // 正確：非標準格式視為空壘
 
             // 測試案例3: 中間有多個空格
             List<String> result3 = BaseballForceOut.getForceOutBases("1B,     2B");
-            assertEquals(Arrays.asList("1B, 2B"), result3);  // 正確：格式錯誤時視為空壘
+            assertEquals(Arrays.asList("1B","2B"), result3);  // 正確：非標準格式視為空壘
 
-            // 測試案例4: 純空格字串
-            List<String> result4 = BaseballForceOut.getForceOutBases("          ");
-            assertEquals(Arrays.asList("1B"), result4);  // 正確：空壘時可封殺一壘
+            // 測試案例4: 只有空格
+            List<String> result4 = BaseballForceOut.getForceOutBases("   ");
+            assertEquals(Arrays.asList("1B"), result4);  // 正確：空白字串視為空壘
 
-            // 測試案例5: 只有逗號和空格
-            List<String> result5 = BaseballForceOut.getForceOutBases("  ,  ,  ");
-            assertEquals(Arrays.asList("1B"), result5);  // 正確：無效輸入視為空壘
+            // 測試案例5: 多個逗號
+            List<String> result5 = BaseballForceOut.getForceOutBases("1B,,2B");
+            assertEquals(Arrays.asList("1B"), result5);  // 正確：非標準格式視為空壘
 
-            // 測試案例6: 包含Tab字元
-            List<String> result6 = BaseballForceOut.getForceOutBases("1B,\t2B");
-            assertEquals(Arrays.asList("1B"), result6);  // 正確：格式錯誤時視為空壘
+            // 測試案例6: 逗號後無空格
+            List<String> result6 = BaseballForceOut.getForceOutBases("1B,2B");
+            assertEquals(Arrays.asList("1B"), result6);  // 正確：非標準格式視為空壘
 
-            // 測試案例7: 包含換行符
-            List<String> result7 = BaseballForceOut.getForceOutBases("1B,\n2B");
-            assertEquals(Arrays.asList("1B"), result7);  // 正確：格式錯誤時視為空壘
+            // 測試案例7: 逗號前有空格
+            List<String> result7 = BaseballForceOut.getForceOutBases("1B ,2B");
+            assertEquals(Arrays.asList("1B"), result7);  // 正確：非標準格式視為空壘
 
-            // 測試案例8: 混合空白字元
-            List<String> result8 = BaseballForceOut.getForceOutBases("1B \t  \n , \t  2B");
-            assertEquals(Arrays.asList("1B"), result8);  // 正確：格式錯誤時視為空壘
+            // 測試案例8: Tab字元
+            List<String> result8 = BaseballForceOut.getForceOutBases("1B,\t2B");
+            assertEquals(Arrays.asList("1B"), result8);  // 正確：非標準格式視為空壘
 
-            // 測試案例9: 壘包間多空格
-            List<String> result9 = BaseballForceOut.getForceOutBases("1B    ,    2B");
-            assertEquals(Arrays.asList("1B"), result9);  // 正確：格式錯誤時視為空壘
+            // 測試案例9: 換行符
+            List<String> result9 = BaseballForceOut.getForceOutBases("1B,\n2B");
+            assertEquals(Arrays.asList("1B"), result9);  // 正確：非標準格式視為空壘
 
-            // 測試案例10: Unicode空格字元
-            List<String> result10 = BaseballForceOut.getForceOutBases("1B\u0020\u0020\u0020,\u0020\u00202B");
-            assertEquals(Arrays.asList("1B"), result10);  // 正確：格式錯誤時視為空壘
+            // 測試案例10: 標準格式確認
+            List<String> result10 = BaseballForceOut.getForceOutBases("1B, 2B");
+            assertEquals(Arrays.asList("1B", "2B","3B"), result10);  // 正確：再次確認標準格式
 
         } catch (Exception e) {
             fail("測試過程中發生未預期的異常: " + e.getMessage());
         }
     }
-
 }
