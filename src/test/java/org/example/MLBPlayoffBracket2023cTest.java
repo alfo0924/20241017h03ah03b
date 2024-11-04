@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +69,23 @@ public class MLBPlayoffBracket2023cTest {
     @Test
     void testValidateTeamsAndWinners() {
         try {
+            // 設置2023年的測試資料
+            teamNames.clear();
+            teamNames.put("BAL", "Baltimore Orioles");
+            teamNames.put("HOU", "Houston Astros");
+            teamNames.put("MIN", "Minnesota Twins");
+            teamNames.put("TB", "Tampa Bay Rays");
+            teamNames.put("TEX", "Texas Rangers");
+            teamNames.put("TOR", "Toronto Blue Jays");
+
+            seeds.clear();
+            seeds.put("BAL", 1);
+            seeds.put("HOU", 2);
+            seeds.put("MIN", 3);
+            seeds.put("TB", 4);
+            seeds.put("TEX", 5);
+            seeds.put("TOR", 6);
+
             Method validateMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "validateTeamsAndWinners",
                     String[].class,
@@ -77,28 +95,49 @@ public class MLBPlayoffBracket2023cTest {
             );
             validateMethod.setAccessible(true);
 
-            // 測試正確的輸入
-            String[] teams = {"TB", "HOU", "MIN"};
-            String[] winners = {"TB", "HOU"};
-            validateMethod.invoke(null, teams, winners, teamNames, seeds);
+            // 測試案例1: 正確的輸入
+            String[] validTeams = {"BAL", "HOU", "MIN"};
+            String[] validWinners = {"TEX", "MIN"};
+            assertDoesNotThrow(() ->
+                    validateMethod.invoke(null, validTeams, validWinners, teamNames, seeds)
+            );
 
-            // 測試重複的隊伍
-            String[] duplicateTeams = {"TB", "TB", "MIN"};
-            Exception exception = assertThrows(Exception.class, () ->
-                    validateMethod.invoke(null, duplicateTeams, winners, teamNames, seeds)
+            // 測試案例2: 重複的隊伍
+            String[] duplicateTeams = {"BAL", "BAL", "MIN"};
+            Exception exception = assertThrows(InvocationTargetException.class, () ->
+                    validateMethod.invoke(null, duplicateTeams, validWinners, teamNames, seeds)
             );
             assertTrue(exception.getCause() instanceof IllegalArgumentException);
+            assertEquals("Duplicate teams in input", exception.getCause().getMessage());
 
-            // 測試未知的隊伍
-            String[] unknownTeams = {"TB", "XXX", "MIN"};
-            exception = assertThrows(Exception.class, () ->
-                    validateMethod.invoke(null, unknownTeams, winners, teamNames, seeds)
+            // 測試案例3: 未知的隊伍
+            String[] unknownTeams = {"BAL", "XXX", "MIN"};
+            exception = assertThrows(InvocationTargetException.class, () ->
+                    validateMethod.invoke(null, unknownTeams, validWinners, teamNames, seeds)
             );
             assertTrue(exception.getCause() instanceof IllegalArgumentException);
+            assertTrue(exception.getCause().getMessage().startsWith("Unknown team:"));
+
+            // 測試案例4: 未知的優勝者
+            String[] unknownWinners = {"BAL", "ZZZ"};
+            exception = assertThrows(InvocationTargetException.class, () ->
+                    validateMethod.invoke(null, validTeams, unknownWinners, teamNames, seeds)
+            );
+            assertTrue(exception.getCause() instanceof IllegalArgumentException);
+            assertTrue(exception.getCause().getMessage().startsWith("Unknown winner:"));
+
+            // 測試案例5: 空陣列（有效的邊界情況）
+            String[] emptyTeams = {};
+            String[] emptyWinners = {};
+            assertDoesNotThrow(() ->
+                    validateMethod.invoke(null, emptyTeams, emptyWinners, teamNames, seeds)
+            );
+
         } catch (Exception e) {
-            fail("驗證測試失敗: " + e.getMessage());
+            fail("測試過程中發生未預期的異常: " + e.getMessage());
         }
     }
+
 
     @Test
     void testProcessYear() {

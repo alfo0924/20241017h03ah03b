@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,10 +65,18 @@ public class MLBPlayoffBracket2023c2Test {
         System.setOut(originalOut);
         outContent.reset();
     }
-
     @Test
     void testValidateTeamsAndWinners() {
         try {
+            // 故意設置錯誤的測試資料
+            teamNames.clear();  // 清空原有資料
+            teamNames.put("TB", "Tampa Bay Rays");
+            teamNames.put("HOU", "Houston Astros");
+
+            seeds.clear();  // 清空原有資料
+            seeds.put("TB", -1);  // 無效的種子序號
+            seeds.put("HOU", 0);  // 無效的種子序號
+
             Method validateMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
                     "validateTeamsAndWinners",
                     String[].class,
@@ -77,26 +86,51 @@ public class MLBPlayoffBracket2023c2Test {
             );
             validateMethod.setAccessible(true);
 
-            // 測試正確的輸入
-            String[] teams = {"TB", "HOU", "MIN"};
-            String[] winners = {"TB", "HOU"};
-            validateMethod.invoke(null, teams, winners, teamNames, seeds);
+            // 測試案例1: 使用不存在的隊伍
+            String[] invalidTeams = {"XXX", "YYY", "ZZZ"};
+            String[] invalidWinners = {"AAA", "BBB"};
+            assertThrows(IllegalArgumentException.class, () ->
+                    validateMethod.invoke(null, invalidTeams, invalidWinners, teamNames, seeds)
+            );
 
-            // 測試重複的隊伍
-            String[] duplicateTeams = {"TB", "TB", "MIN"};
-            Exception exception = assertThrows(Exception.class, () ->
+            // 測試案例2: 測試重複的隊伍
+            String[] duplicateTeams = {"TB", "TB", "HOU"};
+            String[] winners = {"TB", "HOU"};
+            Exception exception = assertThrows(InvocationTargetException.class, () ->
                     validateMethod.invoke(null, duplicateTeams, winners, teamNames, seeds)
             );
             assertTrue(exception.getCause() instanceof IllegalArgumentException);
+            assertEquals("Duplicate teams in input", exception.getCause().getMessage());
 
-            // 測試未知的隊伍
-            String[] unknownTeams = {"TB", "XXX", "MIN"};
-            exception = assertThrows(Exception.class, () ->
+            // 測試案例3: 測試未知的隊伍
+            String[] unknownTeams = {"TB", "XXX", "HOU"};
+            exception = assertThrows(InvocationTargetException.class, () ->
                     validateMethod.invoke(null, unknownTeams, winners, teamNames, seeds)
             );
             assertTrue(exception.getCause() instanceof IllegalArgumentException);
+            assertTrue(exception.getCause().getMessage().startsWith("Unknown team:"));
+
+            // 測試案例4: 測試不在種子序號中的隊伍
+            seeds.remove("HOU");  // 移除HOU的種子序號
+            String[] validTeams = {"TB", "HOU"};
+            exception = assertThrows(InvocationTargetException.class, () ->
+                    validateMethod.invoke(null, validTeams, winners, teamNames, seeds)
+            );
+            assertTrue(exception.getCause() instanceof IllegalArgumentException);
+            assertTrue(exception.getCause().getMessage().startsWith("Unknown team:"));
+
+            // 測試案例5: 測試null值
+            assertThrows(NullPointerException.class, () ->
+                    validateMethod.invoke(null, null, winners, teamNames, seeds)
+            );
+
+            // 測試案例6: 測試空陣列
+            String[] emptyTeams = {};
+            String[] emptyWinners = {};
+            validateMethod.invoke(null, emptyTeams, emptyWinners, teamNames, seeds);
+
         } catch (Exception e) {
-            fail("驗證測試失敗: " + e.getMessage());
+            fail("測試過程中發生未預期的異常: " + e.getMessage());
         }
     }
 
