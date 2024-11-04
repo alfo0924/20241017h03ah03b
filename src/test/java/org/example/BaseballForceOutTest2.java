@@ -177,11 +177,52 @@ public class BaseballForceOutTest2 {
     }
     @Test
     public void testRunnerOnThird() {
-        // 錯誤：三壘有人時預期可以封殺本壘
-        List<String> result = BaseballForceOut.getForceOutBases("3B");
-        assertEquals(Arrays.asList("1B", "HB"), result);  // 應該只有 "1B"
-    }
+        try {
+            // 測試案例1: 錯誤的預期結果（預期可以封殺本壘）
+            List<String> result1 = BaseballForceOut.getForceOutBases("3B");
+            assertEquals(Arrays.asList("1B", "HB"), result1);  // 錯誤：三壘有人時不能封殺本壘
 
+            // 測試案例2: 錯誤的壘包表示方式
+            List<String> result2 = BaseballForceOut.getForceOutBases("Third");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result2);  // 錯誤：使用了錯誤的壘包表示
+
+            // 測試案例3: 錯誤的空格處理
+            List<String> result3 = BaseballForceOut.getForceOutBases(" 3B ");
+            assertEquals(Arrays.asList("3B", "HB"), result3);  // 錯誤：預期錯誤的封殺順序
+
+            // 測試案例4: 錯誤的大小寫處理
+            List<String> result4 = BaseballForceOut.getForceOutBases("3b");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result4);  // 錯誤：不應該可以封殺所有壘包
+
+            // 測試案例5: 錯誤的分隔符號
+            List<String> result5 = BaseballForceOut.getForceOutBases("3B;");
+            assertEquals(Arrays.asList(), result5);  // 錯誤：應該要返回一壘
+
+            // 測試案例6: 錯誤的數字表示
+            List<String> result6 = BaseballForceOut.getForceOutBases("3");
+            assertEquals(Arrays.asList("3B", "HB"), result6);  // 錯誤：使用錯誤的壘包表示
+
+            // 測試案例7: 錯誤的特殊字元
+            List<String> result7 = BaseballForceOut.getForceOutBases("3B#");
+            assertEquals(Arrays.asList("HB"), result7);  // 錯誤：不應該只返回本壘
+
+            // 測試案例8: 錯誤的多重表示
+            List<String> result8 = BaseballForceOut.getForceOutBases("3B, 3B");
+            assertEquals(Arrays.asList("1B", "2B", "3B"), result8);  // 錯誤：重複的壘包
+
+            // 測試案例9: 錯誤的順序預期
+            List<String> result9 = BaseballForceOut.getForceOutBases("3B");
+            assertEquals(Arrays.asList("3B", "2B", "1B"), result9);  // 錯誤：順序錯誤
+
+            // 測試案例10: 錯誤的組合
+            List<String> result10 = BaseballForceOut.getForceOutBases("3B, HB");
+            assertEquals(Arrays.asList("1B", "2B", "3B", "HB"), result10);  // 錯誤：不合理的組合
+
+        } catch (Exception e) {
+            // 錯誤的異常處理：忽略異常
+            System.out.println("發生異常: " + e.getMessage());
+        }
+    }
     @Test
     public void testRunnersOnFirstAndSecond() {
         // 錯誤：一二壘有人時預期不可以封殺三壘
