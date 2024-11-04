@@ -2,6 +2,8 @@ package org.example;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +14,7 @@ public class MLBPlayoffBracket2023cTest {
     private MLBPlayoffBracket2023c bracket;
     private Map<String, String> teamNames;
     private Map<String, Integer> seeds;
-
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     @BeforeEach
     void setUp() {
         bracket = new MLBPlayoffBracket2023c();
@@ -100,16 +102,80 @@ public class MLBPlayoffBracket2023cTest {
 
     @Test
     void testProcessYear() {
-        assertDoesNotThrow(() -> {
-            Method processYearMethod = MLBPlayoffBracket2023c.class.getDeclaredMethod(
-                    "processYear",
-                    int.class,
-                    Map.class,
-                    Map.class
-            );
-            processYearMethod.setAccessible(true);
-            processYearMethod.invoke(null, 23, teamNames, seeds);
-        });
+        // 設置2023年美國聯盟隊伍資料
+        teamNames.put("BAL", "Baltimore Orioles");
+        teamNames.put("HOU", "Houston Astros");
+        teamNames.put("MIN", "Minnesota Twins");
+        teamNames.put("TB", "Tampa Bay Rays");
+        teamNames.put("TEX", "Texas Rangers");
+        teamNames.put("TOR", "Toronto Blue Jays");
+        teamNames.put("ATL", "Atlanta Braves");
+        teamNames.put("LAD", "Los Angeles Dodgers");
+        teamNames.put("MIL", "Milwaukee Brewers");
+        teamNames.put("PHI", "Philadelphia Phillies");
+        teamNames.put("ARI", "Arizona Diamondbacks");
+        teamNames.put("MIA", "Miami Marlins");
+
+        // 設置2023年種子序號
+        seeds.put("BAL", 1);
+        seeds.put("HOU", 2);
+        seeds.put("MIN", 3);
+        seeds.put("TB", 4);
+        seeds.put("TEX", 5);
+        seeds.put("TOR", 6);
+        seeds.put("ATL", 1);
+        seeds.put("LAD", 2);
+        seeds.put("MIL", 3);
+        seeds.put("PHI", 4);
+        seeds.put("ARI", 5);
+        seeds.put("MIA", 6);
+
+        // 測試2023年的處理
+        MLBPlayoffBracket2023c.processYear(2023, teamNames, seeds);
+
+        // 獲取輸出結果
+        String output = outContent.toString();
+
+        // 驗證標題和聯盟名稱
+        assertTrue(output.contains("2023 MLB Playoff Bracket:"));
+        assertTrue(output.contains("(AMERICAN LEAGUE)"));
+        assertTrue(output.contains("(NATIONAL LEAGUE)"));
+
+        // 驗證美國聯盟隊伍和種子序號
+        assertTrue(output.contains("BAL 1 Baltimore Orioles"));
+        assertTrue(output.contains("HOU 2 Houston Astros"));
+        assertTrue(output.contains("MIN 3 Minnesota Twins"));
+        assertTrue(output.contains("TB 4 Tampa Bay Rays"));
+        assertTrue(output.contains("TEX 5 Texas Rangers"));
+        assertTrue(output.contains("TOR 6 Toronto Blue Jays"));
+
+        // 驗證國家聯盟隊伍和種子序號
+        assertTrue(output.contains("ATL 1 Atlanta Braves"));
+        assertTrue(output.contains("LAD 2 Los Angeles Dodgers"));
+        assertTrue(output.contains("MIL 3 Milwaukee Brewers"));
+        assertTrue(output.contains("PHI 4 Philadelphia Phillies"));
+        assertTrue(output.contains("ARI 5 Arizona Diamondbacks"));
+        assertTrue(output.contains("MIA 6 Miami Marlins"));
+
+        // 驗證比賽結果
+        assertTrue(output.contains("TEX ----- TEX"));
+        assertTrue(output.contains("MIN ----- TEX"));
+        assertTrue(output.contains("PHI ----- ARI"));
+        assertTrue(output.contains("ARI ----- ARI"));
+
+        // 驗證最終冠軍
+        assertTrue(output.contains("---- TEX " + teamNames.get("TEX")));
+    }
+    @Test
+    void testProcessYearWithInvalidYear() {
+        // 測試無效年份
+        MLBPlayoffBracket2023c.processYear(2024, teamNames, seeds);
+        String output = outContent.toString();
+
+        // 驗證輸出包含2024年的標題但沒有其他內容
+        assertTrue(output.contains("2024 MLB Playoff Bracket:"));
+        assertFalse(output.contains("AMERICAN LEAGUE"));
+        assertFalse(output.contains("NATIONAL LEAGUE"));
     }
 
     @Test

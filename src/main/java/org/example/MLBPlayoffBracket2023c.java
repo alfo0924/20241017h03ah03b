@@ -128,7 +128,7 @@ public class MLBPlayoffBracket2023c {
             LOGGER.log(Level.SEVERE, "Unexpected error occurred", e);
         }
     }
-    private static void processYear(int year, Map<String, String> teamNames, Map<String, Integer> seeds) {
+    static void processYear(int year, Map<String, String> teamNames, Map<String, Integer> seeds) {
         System.out.println("\n\n" + year + " MLB Playoff Bracket:\n");
 
         switch (year) {
